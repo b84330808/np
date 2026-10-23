@@ -71,3 +71,21 @@ createFixture(
 		);
 	},
 );
+
+createFixture(
+	'returns files relative to a package in a nested subdirectory',
+	async ({context, $$}) => {
+		await $$`git tag v0.0.0`;
+		await context.createFile('outside.js');
+		await context.createFile('packages/unicorn/index.js');
+		await $$`git add .`;
+		await $$`git commit -m "added"`;
+	},
+	async ({
+		testedModule: {newFilesSinceLastRelease},
+		temporaryDirectory,
+	}) => {
+		const newFiles = await newFilesSinceLastRelease(path.join(temporaryDirectory, 'packages', 'unicorn'));
+		assert.deepEqual(newFiles, ['index.js']);
+	},
+);
